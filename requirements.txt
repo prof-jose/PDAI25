@@ -5,3 +5,4 @@ seaborn
 matplotlib
 watchdog
 geopy
+streamlit_searchbox

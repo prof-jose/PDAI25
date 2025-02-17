@@ -4,18 +4,19 @@ similar properties.
 """
 
 import geopy.distance as gd
+import json
+import locale
 import numpy as np
 import pandas as pd
 import streamlit as st
-import locale
-import json
+from streamlit_searchbox import st_searchbox
 
 
 # Constants
 SHOW_MAP = True  # Set to False while developing to avoid API calls
 TOKEN_FILE = "token.json"  # You need a token file with the Mapbox API key
 FILE = (
-    "https://files.data.gouv.fr/geo-dvf/latest/csv/2022/"
+    "https://files.data.gouv.fr/geo-dvf/latest/csv/2024/"
     "departements/75.csv.gz"
 )
 RELEVANT_COLUMNS = [
@@ -236,6 +237,7 @@ def list_comparables(comparables, token):
             num = int(comparables.iloc[i].adresse_numero)
             name = comparables.iloc[i].adresse_nom_voie
             st.subheader(f"📍 {num} {name}")
+
         with c2:
             st.write(f"{comparables.iloc[i].nom_commune}")
         cols = st.columns(7)
@@ -277,40 +279,61 @@ def main():
 
     # Display title and input box
     st.title("Real estate prices in France")
-    id = st.selectbox("Select a property:", test.sample(50).id_mutation.values)
+    #id = st.selectbox("Select a property:", test.sample(50).id_mutation.values)
 
-    # Display data for that property:
-    row = test[test.id_mutation == id].head(1)
-    format_row_info(row)
+    def search_fn(searchterm):
 
-    # Compute similarities in order to find the comparables
-    train['Similarity'] = get_similarities(train, row)
-    train['Similarity'] = np.exp(-train['Similarity'])
+        if len(searchterm) < 3:
+            return []
 
-    # Display the estimated price based on comparables
-    comparables = train.sort_values(
-        'Similarity',
-        ascending=False
-        ).head(5).copy()
-    display_price_data(comparables, row)
+        filtered = test[test.adresse_nom_voie.str.contains(searchterm, case=False)][['adresse_nom_voie', 'adresse_numero', 'id_mutation']]
 
-    # Display map of comparables
-    st.header("Analysis of Comparables")
-    st.write("The previous estimation is based on the following comparables:")
-    display_map(comparables, row)
+        filtered['complete'] = filtered.adresse_numero.astype(int).astype(str) + ' ' + filtered.adresse_nom_voie + ' [' + filtered.id_mutation.astype(str) + ']'
 
-    # List the comparables
-    row = row.reset_index().drop('index', axis=1)
-    distance = comparables.apply(
-        lambda r: gd.distance(
-            (r.latitude, r.longitude),
-            (row.loc[0, 'latitude'], row.loc[0, 'longitude'])
-            ).km,
-        axis=1
+        # Convert to list of tuples
+        filtered = list(zip(filtered.complete.tolist(), filtered.id_mutation.tolist()))
+
+        return filtered
+
+    id = st_searchbox(
+        search_fn,
+        placeholder="Search for a property:"
     )
-    comparables['dist_meters'] = (distance*1000).astype(int)
+    st.session_state['id'] = id
 
-    list_comparables(comparables, token)
+    if id is not None:
+        # Display data for that property:
+        row = test[test.id_mutation == id].head(1)
+        format_row_info(row)
+
+        # Compute similarities in order to find the comparables
+        train['Similarity'] = get_similarities(train, row)
+        train['Similarity'] = np.exp(-train['Similarity'])
+
+        # Display the estimated price based on comparables
+        comparables = train.sort_values(
+            'Similarity',
+            ascending=False
+            ).head(5).copy()
+        display_price_data(comparables, row)
+
+        # Display map of comparables
+        st.header("Analysis of Comparables")
+        st.write("The previous estimation is based on the following comparables:")
+        display_map(comparables, row)
+
+        # List the comparables
+        row = row.reset_index().drop('index', axis=1)
+        distance = comparables.apply(
+            lambda r: gd.distance(
+                (r.latitude, r.longitude),
+                (row.loc[0, 'latitude'], row.loc[0, 'longitude'])
+                ).km,
+            axis=1
+        )
+        comparables['dist_meters'] = (distance*1000).astype(int)
+
+        list_comparables(comparables, token)
 
 
 if __name__ == "__main__":
