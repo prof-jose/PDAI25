@@ -1,5 +1,13 @@
 # Prototyping: Quick reference
 
+Index:
+
+- [Git](#git)
+- [Virtual environment](#virtual-environment)
+- [Python tricks](#python-tricks)
+- [Saving and loading ML models](#saving-and-loading-ml-models)
+
+
 ## Git
 
 ### Cloning the repository:
@@ -146,5 +154,24 @@ which is another common use of context managers.
 
 - You can check the Python documentation on context managers, including what they do and how to program your own ones here: http://book.pythontips.com/en/latest/context_managers.html
 
+## Saving and loading ML models
 
+When you train a sklearn model or pipeline, you can save it to a file using the `joblib` library:
 
+```python
+from joblib import dump
+
+dump(model, 'model.joblib')
+```
+
+To load the model back:
+
+```python
+from joblib import load
+
+model = load('model.joblib')
+```
+
+This is useful for example when training a model/pipeline in a python script and using it in a Streamlit app.
+
+*Note: You also have exactly the same syntax in the `pickle` library, but `joblib` is more efficient for large numpy arrays.*
