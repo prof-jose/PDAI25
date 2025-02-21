@@ -91,6 +91,31 @@ Deactivating the virtual environment:
 conda deactivate
 ```
 
+### The file `requirements.txt``
+
+The file `requirements.txt` is a list of all packages you need to install in your virtual environment.
+
+It is optional, but it is a good practice to keep it updated, so you keep track of all packages you are using in your project, in case you or someone else need to recreate the environment.
+
+Just write the name of the package in the file, one per line.
+
+To install all packages listed in the file, or update the environment with missing packages:
+
+- Visual Studio Code: Click on the "Create environment" button on the bottom right corner that appears when you open the `requirements.txt` file.
+
+- Terminal (venv): Run the following command:
+
+```bash
+pip install -r requirements.txt
+```
+
+- Terminal (conda): Run the following command:
+
+```bash
+conda install --file requirements.txt
+```
+
+
 ## Python tricks
 
 ### Context managers
