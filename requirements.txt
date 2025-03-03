@@ -7,3 +7,8 @@ watchdog
 geopy
 dash
 dash_bootstrap_components
+nbformat>=4.2.0
+plotly
+openpyxl
+kaleido
+anywidget
