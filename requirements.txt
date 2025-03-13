@@ -12,3 +12,5 @@ plotly
 openpyxl
 kaleido
 anywidget
+cohere
+openfoodfacts
