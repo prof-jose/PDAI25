@@ -105,10 +105,8 @@ def process_text(text, df, client):
 
             text_response = call_llm(text, client)
 
-            with st.expander("See last patient processed"):
+            with st.expander("Processing results"):
                 st.json(text_response)
-
-            st.subheader("Patients in queue:")
 
             # Add row to dataframe
             d = json.loads(text_response)
@@ -125,11 +123,23 @@ def main():
     client = get_client()
     df = get_database()
 
-    st.sidebar.title("Using LLMs to structure data")
-    text = st.sidebar.text_area("Triage report:")
-    if st.sidebar.button("Submit"):
+    st.header("Example: Using LLMs to structure data")
+
+    st.sidebar.markdown("""
+    Enter the report with the known information about an incoming patient
+    (age, temperature, symptoms, tests performed and diagnistics).
+    
+    Clicking on "Add to queue" will process the report with an LLM, 
+    create a structured record and add it to a "database".
+    """
+    )
+
+    st.sidebar.header("Triage report")
+    text = st.sidebar.text_area("Enter text:")
+    if st.sidebar.button("Add to queue"):
         process_text(text, df, client)
 
+    st.subheader("Patients in queue:")
     st.dataframe(df, column_config=DF_COLUMN_CONFIG)
 
 
