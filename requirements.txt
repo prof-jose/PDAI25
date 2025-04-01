@@ -14,3 +14,7 @@ kaleido
 anywidget
 cohere
 openfoodfacts
+sentence_transformers
+faiss-cpu
+st-annotated-text
+torchvision
